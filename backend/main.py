@@ -85,6 +85,7 @@ class AIRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 @app.get("/")
+@app.get("/api")
 def health() -> dict:
     return {
         "app": "DataFlow Python Engine",
@@ -94,6 +95,7 @@ def health() -> dict:
 
 
 @app.post("/pipelines/parse", response_model=ParseResponse)
+@app.post("/api/pipelines/parse", response_model=ParseResponse)
 def parse_pipeline(req: PipelineRequest) -> ParseResponse:
     """
     Validate graph topology.
@@ -112,6 +114,7 @@ def parse_pipeline(req: PipelineRequest) -> ParseResponse:
 
 
 @app.post("/pipelines/execute", response_model=ExecuteResponse)
+@app.post("/api/pipelines/execute", response_model=ExecuteResponse)
 def execute(req: PipelineRequest) -> ExecuteResponse:
     """
     Execute pipeline in topological order using Pandas.
@@ -130,6 +133,7 @@ def execute(req: PipelineRequest) -> ExecuteResponse:
 
 
 @app.post("/ai/generate-pipeline")
+@app.post("/api/ai/generate-pipeline")
 def generate_ai_pipeline(req: AIRequest) -> dict:
     """
     Generate pipeline graph from natural language using Groq LLM or rule-based fallback.

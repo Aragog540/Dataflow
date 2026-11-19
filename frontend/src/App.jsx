@@ -18,7 +18,7 @@ import ResultsDrawer from './panels/ResultsDrawer';
 import TemplateGallery from './components/TemplateGallery';
 import CodeExportModal from './components/CodeExportModal';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8000' : '');
 
 // ── Toolbar ───────────────────────────────────────────────────────────────
 function Toolbar({ onOpenAi, onOpenTemplates, onOpenResults, onOpenCodeExport }) {
