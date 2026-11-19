@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import React, { Component, useState, useCallback, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -191,6 +191,63 @@ function Canvas({ onSelectNode }) {
   );
 }
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('DataFlow Caught Render Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: 32,
+          background: '#0b1120',
+          color: '#f8fafc',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'sans-serif'
+        }}>
+          <h2 style={{ color: '#ef4444', marginBottom: 12 }}>⚠ Application Render Error</h2>
+          <p style={{ color: '#94a3b8', marginBottom: 16, maxWidth: 500, textAlign: 'center', fontSize: 13 }}>
+            {this.state.error?.message || 'An unexpected rendering error occurred.'}
+          </p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('dataflow_pipeline');
+              window.location.reload();
+            }}
+            style={{
+              background: '#0284c7',
+              border: 'none',
+              borderRadius: 6,
+              color: '#fff',
+              padding: '8px 18px',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Reset Pipeline & Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ── Root ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [aiOpen, setAiOpen] = useState(false);
@@ -207,38 +264,40 @@ export default function App() {
   };
 
   return (
-    <ReactFlowProvider>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#020617' }}>
-        <Toolbar
-          onOpenAi={() => setAiOpen(true)}
-          onOpenTemplates={() => setTemplatesOpen(true)}
-          onOpenResults={() => setResultsOpen(true)}
-          onOpenCodeExport={() => setCodeExportOpen(true)}
-        />
+    <ErrorBoundary>
+      <ReactFlowProvider>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#020617' }}>
+          <Toolbar
+            onOpenAi={() => setAiOpen(true)}
+            onOpenTemplates={() => setTemplatesOpen(true)}
+            onOpenResults={() => setResultsOpen(true)}
+            onOpenCodeExport={() => setCodeExportOpen(true)}
+          />
 
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-          <NodePalette />
-          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', position: 'relative' }}>
-            <Canvas onSelectNode={() => setResultsOpen(true)} />
+          <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+            <NodePalette />
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', position: 'relative' }}>
+              <Canvas onSelectNode={() => setResultsOpen(true)} />
+            </div>
           </div>
-        </div>
 
-        {/* Slide-out & Modal Drawers */}
-        <AIChatDrawer open={aiOpen} onClose={() => setAiOpen(false)} />
-        <ResultsDrawer open={resultsOpen} onClose={() => setResultsOpen(false)} />
-        <TemplateGallery
-          open={templatesOpen}
-          onClose={() => setTemplatesOpen(false)}
-          onLoad={handleTemplateLoad}
-        />
-        <CodeExportModal
-          open={codeExportOpen}
-          onClose={() => setCodeExportOpen(false)}
-          nodes={nodes}
-          edges={edges}
-        />
-      </div>
-    </ReactFlowProvider>
+          {/* Slide-out & Modal Drawers */}
+          <AIChatDrawer open={aiOpen} onClose={() => setAiOpen(false)} />
+          <ResultsDrawer open={resultsOpen} onClose={() => setResultsOpen(false)} />
+          <TemplateGallery
+            open={templatesOpen}
+            onClose={() => setTemplatesOpen(false)}
+            onLoad={handleTemplateLoad}
+          />
+          <CodeExportModal
+            open={codeExportOpen}
+            onClose={() => setCodeExportOpen(false)}
+            nodes={nodes}
+            edges={edges}
+          />
+        </div>
+      </ReactFlowProvider>
+    </ErrorBoundary>
   );
 }
 

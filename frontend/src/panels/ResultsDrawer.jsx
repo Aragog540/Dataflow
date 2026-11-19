@@ -8,12 +8,12 @@ import usePipelineStore from '../store';
 export default function ResultsDrawer({ open, onClose }) {
   const [activeTab, setActiveTab] = useState('Table');
 
-  if (!open) return null;
-
   const storeState = usePipelineStore();
   const results = storeState.results || {};
   const selectedNodeId = storeState.selectedNodeId;
   const nodes = storeState.nodes || [];
+
+  if (!open) return null;
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const result = selectedNodeId ? results[selectedNodeId] : null;
@@ -76,31 +76,31 @@ export default function ResultsDrawer({ open, onClose }) {
           {/* Tab contents */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
             {activeTab === 'Table' && (
-              <DataTable columns={result.columns} rows={result.rows} />
+              <DataTable columns={result.columns ?? []} rows={result.rows ?? []} />
             )}
 
             {activeTab === 'Chart' && (
               <ChartRenderer
                 chartType={selectedNode?.data?.chartType || 'bar'}
-                columns={result.columns}
-                rows={result.rows}
-                xCol={selectedNode?.data?.xAxis || (result.columns[0] ?? '')}
-                yCol={selectedNode?.data?.yAxis || (result.columns[1] ?? '')}
+                columns={result.columns ?? []}
+                rows={result.rows ?? []}
+                xCol={selectedNode?.data?.xAxis || (result.columns?.[0] ?? '')}
+                yCol={selectedNode?.data?.yAxis || (result.columns?.[1] ?? '')}
               />
             )}
 
             {activeTab === 'Profile' && (
-              <ProfilerView columns={result.columns} rows={result.rows} />
+              <ProfilerView columns={result.columns ?? []} rows={result.rows ?? []} />
             )}
 
             {activeTab === 'Export' && (
               <div style={{ padding: 16, background: '#1e293b', borderRadius: 8 }}>
                 <div style={{ marginBottom: 12, fontSize: 12, color: '#94a3b8' }}>
-                  Export processed output for node <strong>{selectedNodeId}</strong> ({result.rows.length} rows, {result.columns.length} columns):
+                  Export processed output for node <strong>{selectedNodeId}</strong> ({(result.rows ?? []).length} rows, {(result.columns ?? []).length} columns):
                 </div>
                 <ExportButton
-                  columns={result.columns}
-                  rows={result.rows}
+                  columns={result.columns ?? []}
+                  rows={result.rows ?? []}
                   filename={`dataflow-${selectedNodeId}`}
                 />
               </div>

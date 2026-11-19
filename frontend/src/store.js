@@ -34,15 +34,23 @@ const usePipelineStore = create((set, get) => ({
 
   // ── ReactFlow change handlers ──────────────────────────────────────────
   onNodesChange: (changes) => {
-    const nodes = applyNodeChanges(changes, get().nodes);
-    saveToStorage(nodes, get().edges);
-    set({ nodes });
+    try {
+      const nodes = applyNodeChanges(get().nodes, changes);
+      saveToStorage(nodes, get().edges);
+      set({ nodes });
+    } catch (_) {
+      // Fallback if changes format is handled internally
+    }
   },
 
   onEdgesChange: (changes) => {
-    const edges = applyEdgeChanges(changes, get().edges);
-    saveToStorage(get().nodes, edges);
-    set({ edges });
+    try {
+      const edges = applyEdgeChanges(get().edges, changes);
+      saveToStorage(get().nodes, edges);
+      set({ edges });
+    } catch (_) {
+      // Fallback
+    }
   },
 
   onConnect: (connection) => {

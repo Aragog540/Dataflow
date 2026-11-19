@@ -40,7 +40,7 @@ def op_load(node_data: dict[str, Any]) -> pd.DataFrame:
     Load a CSV or JSON file from disk or in-memory content.
     """
     file_content: Any = node_data.get("fileContent")
-    file_path: str | None = node_data.get("filePath")
+    file_path: str | None = node_data.get("filePath") or node_data.get("path")
     file_name: str = node_data.get("fileName", "data.csv")
 
     if isinstance(file_content, dict):

@@ -52,14 +52,16 @@ from data_ops import (
 def _build_adjacency(
     nodes: list[dict], edges: list[dict]
 ) -> tuple[dict[str, list[str]], dict[str, list[str]], set[str]]:
-    node_ids: set[str] = {n["id"] for n in nodes}
+    node_ids: set[str] = {n["id"] for n in nodes if "id" in n}
     successors: dict[str, list[str]] = defaultdict(list)
     predecessors: dict[str, list[str]] = defaultdict(list)
 
     for edge in edges:
-        src, tgt = edge["source"], edge["target"]
-        successors[src].append(tgt)
-        predecessors[tgt].append(src)
+        src = edge.get("source")
+        tgt = edge.get("target")
+        if src in node_ids and tgt in node_ids:
+            successors[src].append(tgt)
+            predecessors[tgt].append(src)
 
     return dict(successors), dict(predecessors), node_ids
 
