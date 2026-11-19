@@ -1,0 +1,7 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #020617; color: #e2e8f0; }
+/* ReactFlow overrides */
+.react-flow__attribution { display: none; }
+.react-flow__controls button { background: #1e293b; border-color: #334155; color: #94a3b8; }
+.react-flow__controls button:hover { background: #334155; }
