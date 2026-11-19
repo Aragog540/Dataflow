@@ -4,9 +4,15 @@ import json
 import httpx
 
 ALLOWED_TYPES = {
-    "load", "dropNulls", "dedupe", "fillMissing", "filterColumns",
-    "rename", "calcField", "merge", "groupBy", "profiler",
-    "chart", "preview", "export"
+    # Core types
+    "load", "dropNulls", "dedupe", "deduplicate", "fillMissing", "filterColumns",
+    "rename", "calcField", "merge", "join", "groupBy", "profiler",
+    "chart", "preview", "export",
+    # New extended features
+    "sqlDatabase", "apiSource", "typeCast", "trimStrings", "scaleNormalize",
+    "selectColumns", "addColumn", "pivot", "melt", "rollingWindow",
+    "stringOps", "describe", "sample", "sort", "slice",
+    "aggregate", "concat", "schemaValidator", "comment"
 }
 
 
@@ -35,7 +41,7 @@ def validate_pipeline(pipeline: dict) -> None:
 
 
 def rule_based_pipeline(prompt: str) -> dict:
-    """Generate a pipeline from keyword matching, always starting with a load node."""
+    """Generate a pipeline from keyword matching, always starting with an input node."""
     p = prompt.lower()
     nodes = []
     edges = []
@@ -62,32 +68,67 @@ def rule_based_pipeline(prompt: str) -> dict:
                 "target": nodes[-1]["id"],
             })
 
-    # Always start with load
-    nodes.append({
-        "id": "load-1",
-        "type": "load",
-        "data": {},
-        "position": {"x": 100, "y": 100},
-    })
-    seen_types.add("load")
+    # Determine primary source: SQL, API, or CSV load
+    if any(k in p for k in ("sql", "database", "sqlite", "postgres", "query")):
+        nodes.append({
+            "id": "sqlDatabase-1",
+            "type": "sqlDatabase",
+            "data": {"query": "SELECT * FROM sales_orders"},
+            "position": {"x": 100, "y": 100},
+        })
+        seen_types.add("sqlDatabase")
+    elif any(k in p for k in ("api", "endpoint", "rest", "fetch", "http")):
+        nodes.append({
+            "id": "apiSource-1",
+            "type": "apiSource",
+            "data": {"url": "https://jsonplaceholder.typicode.com/todos"},
+            "position": {"x": 100, "y": 100},
+        })
+        seen_types.add("apiSource")
+    else:
+        nodes.append({
+            "id": "load-1",
+            "type": "load",
+            "data": {},
+            "position": {"x": 100, "y": 100},
+        })
+        seen_types.add("load")
 
-    # Keyword -> node_type ordered rules
+    # Keyword -> node_type rules
     rules = [
         (["null", "missing", "drop null"], "dropNulls", {}),
-        (["dedupe", "duplicate"], "dedupe", {}),
+        (["dedupe", "duplicate", "deduplicate"], "dedupe", {}),
         (["fill"], "fillMissing", {}),
-        (["filter col", "select col", "keep col"], "filterColumns", {}),
+        (["type cast", "cast type", "convert type", "to int", "to float"], "typeCast", {}),
+        (["trim", "strip whitespace", "clean strings"], "trimStrings", {}),
+        (["scale", "normalize", "standardize", "z-score", "min-max"], "scaleNormalize", {}),
+        (["select cols", "select columns", "choose columns"], "selectColumns", {}),
+        (["filter col", "keep col"], "filterColumns", {}),
         (["revenue", "filter", "where", "> ", "< "], "filterColumns", {"mode": "keep"}),
-        (["group", "aggregate", "sum", "count", "by region", "by product"], "groupBy", {}),
+        (["add column", "new column"], "addColumn", {}),
+        (["calc", "formula", "multiply", "expression"], "calcField", {}),
+        (["string op", "replace text", "uppercase", "lowercase", "regex"], "stringOps", {}),
+        (["rolling", "moving average", "window"], "rollingWindow", {}),
+        (["pivot", "unstack", "crosstab"], "pivot", {}),
+        (["melt", "unpivot", "wide to long"], "melt", {}),
+        (["group", "by region", "by product"], "groupBy", {}),
+        (["aggregate", "dataset sum", "total"], "aggregate", {}),
+        (["sort", "order by", "rank"], "sort", {}),
+        (["slice", "head", "tail", "top rows", "limit"], "slice", {}),
+        (["sample", "random rows"], "sample", {}),
+        (["schema", "validate schema", "assert columns"], "schemaValidator", {}),
         (["bar"], "chart", {"chartType": "bar"}),
         (["line chart"], "chart", {"chartType": "line"}),
         (["pie"], "chart", {"chartType": "pie"}),
         (["scatter"], "chart", {"chartType": "scatter"}),
         (["chart", "visuali"], "chart", {}),
+        (["describe", "summary stats"], "describe", {}),
         (["profile", "stats", "profil"], "profiler", {}),
         (["rename"], "rename", {}),
-        (["calc", "formula", "multiply", "expression"], "calcField", {}),
-        (["merge", "join"], "merge", {}),
+        (["join"], "join", {}),
+        (["merge"], "merge", {}),
+        (["concat", "stack", "append"], "concat", {}),
+        (["comment", "note", "sticky"], "comment", {}),
         (["preview", "show"], "preview", {}),
         (["export", "download", "save"], "export", {}),
     ]
@@ -105,12 +146,12 @@ def rule_based_pipeline(prompt: str) -> dict:
 
 def call_groq(prompt: str, api_key: str) -> dict:
     """Call the Groq API and return a validated pipeline dict."""
+    types_str = ",".join(ALLOWED_TYPES)
     system_msg = (
         "You are a data pipeline generator. Return ONLY valid JSON with keys 'nodes' and 'edges'. "
         "Each node: {id:string, type:string, data:{}, position:{x:number,y:number}}. "
         "Each edge: {id:string, source:string, target:string}. "
-        "Use these node types only: load,dropNulls,dedupe,fillMissing,filterColumns,rename,"
-        "calcField,merge,groupBy,profiler,chart,preview,export. "
+        f"Use these node types only: {types_str}. "
         "Space nodes 220px apart horizontally starting at x=100,y=100."
     )
     payload = {
