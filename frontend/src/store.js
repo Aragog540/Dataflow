@@ -1,15 +1,23 @@
 import { create } from 'zustand';
 import { addEdge } from '@xyflow/react';
 import { applyNodeChanges, applyEdgeChanges } from '@xyflow/system';
+import { PIPELINE_TEMPLATES } from './pipelineTemplates';
 
 const STORAGE_KEY = 'dataflow_pipeline';
 
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.nodes) && parsed.nodes.length > 0) {
+        return parsed;
+      }
+    }
   } catch (_) {}
-  return { nodes: [], edges: [] };
+  // Default to first pre-configured template with embedded CSV dataset
+  const defaultTpl = PIPELINE_TEMPLATES[0];
+  return { nodes: defaultTpl?.nodes ?? [], edges: defaultTpl?.edges ?? [] };
 }
 
 function saveToStorage(nodes, edges) {

@@ -1,83 +1,5 @@
 import { useState } from 'react';
-
-const TEMPLATES = [
-  {
-    emoji: '👁',
-    name: 'Quick Preview',
-    description: 'Load data and immediately preview it.',
-    nodes: [
-      { id: 't1-load', type: 'load', data: {}, position: { x: 100, y: 100 } },
-      { id: 't1-prev', type: 'preview', data: {}, position: { x: 320, y: 100 } },
-    ],
-    edges: [{ id: 'e1', source: 't1-load', target: 't1-prev' }],
-  },
-  {
-    emoji: '🧹',
-    name: 'Clean & Export',
-    description: 'Drop nulls, deduplicate, fill missing values, then export.',
-    nodes: [
-      { id: 't2-load', type: 'load', data: {}, position: { x: 100, y: 100 } },
-      { id: 't2-drop', type: 'dropNulls', data: {}, position: { x: 320, y: 100 } },
-      { id: 't2-dedup', type: 'dedupe', data: {}, position: { x: 540, y: 100 } },
-      { id: 't2-fill', type: 'fillMissing', data: {}, position: { x: 760, y: 100 } },
-      { id: 't2-exp', type: 'export', data: {}, position: { x: 980, y: 100 } },
-    ],
-    edges: [
-      { id: 'e1', source: 't2-load', target: 't2-drop' },
-      { id: 'e2', source: 't2-drop', target: 't2-dedup' },
-      { id: 'e3', source: 't2-dedup', target: 't2-fill' },
-      { id: 'e4', source: 't2-fill', target: 't2-exp' },
-    ],
-  },
-  {
-    emoji: '📊',
-    name: 'Data Profile',
-    description: 'Load data and run a statistical profiler.',
-    nodes: [
-      { id: 't3-load', type: 'load', data: {}, position: { x: 100, y: 100 } },
-      { id: 't3-prof', type: 'profiler', data: {}, position: { x: 320, y: 100 } },
-    ],
-    edges: [{ id: 'e1', source: 't3-load', target: 't3-prof' }],
-  },
-  {
-    emoji: '📈',
-    name: 'Group & Chart',
-    description: 'Clean data, group by a column, and visualize.',
-    nodes: [
-      { id: 't4-load', type: 'load', data: {}, position: { x: 100, y: 100 } },
-      { id: 't4-drop', type: 'dropNulls', data: {}, position: { x: 320, y: 100 } },
-      { id: 't4-grp', type: 'groupBy', data: {}, position: { x: 540, y: 100 } },
-      { id: 't4-chart', type: 'chart', data: {}, position: { x: 760, y: 100 } },
-    ],
-    edges: [
-      { id: 'e1', source: 't4-load', target: 't4-drop' },
-      { id: 'e2', source: 't4-drop', target: 't4-grp' },
-      { id: 'e3', source: 't4-grp', target: 't4-chart' },
-    ],
-  },
-  {
-    emoji: '🔄',
-    name: 'Full ETL',
-    description: 'Complete pipeline: clean, transform, filter, rename, export.',
-    nodes: [
-      { id: 't5-load', type: 'load', data: {}, position: { x: 100, y: 100 } },
-      { id: 't5-drop', type: 'dropNulls', data: {}, position: { x: 320, y: 100 } },
-      { id: 't5-dedup', type: 'dedupe', data: {}, position: { x: 540, y: 100 } },
-      { id: 't5-fill', type: 'fillMissing', data: {}, position: { x: 760, y: 100 } },
-      { id: 't5-filt', type: 'filterColumns', data: {}, position: { x: 980, y: 100 } },
-      { id: 't5-ren', type: 'rename', data: {}, position: { x: 1200, y: 100 } },
-      { id: 't5-exp', type: 'export', data: {}, position: { x: 1420, y: 100 } },
-    ],
-    edges: [
-      { id: 'e1', source: 't5-load', target: 't5-drop' },
-      { id: 'e2', source: 't5-drop', target: 't5-dedup' },
-      { id: 'e3', source: 't5-dedup', target: 't5-fill' },
-      { id: 'e4', source: 't5-fill', target: 't5-filt' },
-      { id: 'e5', source: 't5-filt', target: 't5-ren' },
-      { id: 'e6', source: 't5-ren', target: 't5-exp' },
-    ],
-  },
-];
+import { PIPELINE_TEMPLATES } from '../pipelineTemplates';
 
 export default function TemplateGallery({ open, onClose, onLoad }) {
   const [hovered, setHovered] = useState(null);
@@ -86,46 +8,112 @@ export default function TemplateGallery({ open, onClose, onLoad }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.75)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+      }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: 24, width: 640, maxHeight: '80vh', overflowY: 'auto' }}>
+      <div
+        style={{
+          background: '#0a0f1d',
+          border: '1px solid #1e293b',
+          borderRadius: 14,
+          padding: 24,
+          width: 760,
+          maxWidth: '95vw',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+        }}
+      >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#e2e8f0' }}>📚 Pipeline Templates</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f8fafc', margin: 0 }}>
+              📚 Pre-Configured Pipeline Templates
+            </h2>
+            <p style={{ color: '#64748b', fontSize: 12, marginTop: 4, marginBottom: 0 }}>
+              Select any recipe below. Each template comes fully pre-loaded with sample CSV datasets ready for 1-click execution.
+            </p>
+          </div>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              fontSize: 20,
+              cursor: 'pointer',
+              lineHeight: 1,
+              padding: 4,
+            }}
           >
             ✕
           </button>
         </div>
+
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          {TEMPLATES.map((tpl, i) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14, marginTop: 18 }}>
+          {PIPELINE_TEMPLATES.map((tpl, i) => (
             <div
               key={i}
               onClick={() => { onLoad(tpl); onClose(); }}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
               style={{
-                background: '#1e293b',
-                borderRadius: 8,
+                background: hovered === i ? '#162238' : '#0f172a',
+                borderRadius: 10,
                 padding: 16,
                 cursor: 'pointer',
-                border: `1px solid ${hovered === i ? '#3b82f6' : '#334155'}`,
-                transition: 'border-color 0.15s',
+                border: `1px solid ${hovered === i ? '#38bdf8' : '#1e293b'}`,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'all 0.18s ease-in-out',
+                transform: hovered === i ? 'translateY(-2px)' : 'none',
               }}
             >
-              <div style={{ fontWeight: 700, color: '#e2e8f0', fontSize: 13, marginBottom: 6 }}>
-                {tpl.emoji} {tpl.name}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 22 }}>{tpl.emoji}</span>
+                  {tpl.badge && (
+                    <span
+                      style={{
+                        background: '#1e3a5f',
+                        color: '#38bdf8',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        borderRadius: 4,
+                        padding: '2px 6px',
+                      }}
+                    >
+                      {tpl.badge}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 13, marginBottom: 6, lineHeight: 1.3 }}>
+                  {tpl.name}
+                </div>
+                <div style={{ color: '#94a3b8', fontSize: 11, marginBottom: 12, lineHeight: 1.4 }}>
+                  {tpl.description}
+                </div>
               </div>
-              <div style={{ color: '#94a3b8', fontSize: 11, marginBottom: 10, lineHeight: 1.4 }}>
-                {tpl.description}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1e293b', paddingTop: 8, marginTop: 4 }}>
+                <span style={{ color: '#475569', fontSize: 11 }}>
+                  {tpl.nodes.length} nodes · {tpl.edges.length} edges
+                </span>
+                <span style={{ color: '#10b981', fontSize: 10, fontWeight: 600 }}>
+                  ✓ CSV Embedded
+                </span>
               </div>
-              <span style={{ background: '#1e3a5f', color: '#93c5fd', fontSize: 10, borderRadius: 4, padding: '1px 6px' }}>
-                {tpl.nodes.length} nodes
-              </span>
             </div>
           ))}
         </div>

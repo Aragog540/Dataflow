@@ -1,0 +1,13 @@
+customer_id,name,email,plan,monthly_spend,signup_date,status
+C001, John Doe ,john.doe@example.com,Pro,79.99,2023-01-15,Active
+C002,Jane Smith,jane.smith@example.com,Basic,29.99,2023-02-10,Active
+C003,Bob Johnson ,bob.j@example.com,Enterprise,299.99,2022-11-05,Churned
+C004, Alice Williams,alice.w@example.com,Pro,79.99,2023-04-20,Active
+C005,Charlie Brown,charlie.b@example.com,Basic,,2023-05-12,Active
+C006,David Miller ,david.m@example.com,Enterprise,299.99,2022-08-30,Active
+C007,Emma Wilson,emma.w@example.com,Pro,79.99,2023-03-25,Churned
+C008, John Doe ,john.doe@example.com,Pro,79.99,2023-01-15,Active
+C009,Frank Thomas,frank.t@example.com,Basic,29.99,2023-06-18,Active
+C010,Grace Lee ,grace.l@example.com,Pro,,2023-07-01,Active
+C011,Henry Clark,henry.c@example.com,Enterprise,299.99,2022-09-14,Active
+C012,Ivy Taylor,ivy.t@example.com,Basic,29.99,2023-08-22,Churned
